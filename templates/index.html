@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VAM-AI Random Wheel</title>
+  <meta name="description" content="VAM-AI Random Wheel Generator – spin the wheel to pick a winner from your list." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@700;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+  <!-- ===== HERO HEADER ===== -->
+  <header class="site-header">
+    <div class="header-brand">
+      <img src="/logo" alt="VAM-AI Logo" class="header-logo" />
+      <div class="header-text">
+        <span class="header-title">VAM-AI</span>
+        <span class="header-sub">Random Wheel Generator</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <main class="app-layout">
+
+    <!-- LEFT / WHEEL COLUMN -->
+    <section class="wheel-column">
+      <div class="wheel-wrap">
+        <!-- Pointer / arrow -->
+        <div class="wheel-pointer" id="wheelPointer">◀</div>
+
+        <!-- Canvas -->
+        <canvas id="wheelCanvas" width="540" height="540"></canvas>
+
+        <!-- Center logo button -->
+        <button id="spinBtn" class="spin-center-btn" title="Click to spin!">
+          <img src="/logo" alt="Spin" class="spin-logo" />
+          <span class="spin-label">SPIN</span>
+        </button>
+      </div>
+
+      <!-- Keyboard hint -->
+      <p class="spin-hint">Click the logo or press <kbd>Space</kbd> to spin</p>
+    </section>
+
+    <!-- RIGHT / PANEL COLUMN -->
+    <aside class="panel-column" id="panelColumn">
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabEntries" onclick="switchTab('entries')">
+          Entries <span class="tab-count" id="entriesCount">0</span>
+        </button>
+        <button class="tab-btn" id="tabResults" onclick="switchTab('results')">
+          Results <span class="tab-count" id="resultsCount">0</span>
+        </button>
+      </div>
+
+      <!-- ---- ENTRIES PANEL ---- -->
+      <div class="panel-content" id="panelEntries">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="tool-btn" id="btnShuffle" onclick="shuffleEntries()" title="Shuffle list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+            </svg>
+            Shuffle
+          </button>
+          <button class="tool-btn" id="btnSort" onclick="sortEntries()" title="Sort A–Z / Z–A">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M7 12h10M11 18h2" />
+            </svg>
+            Sort
+          </button>
+          <button class="tool-btn danger" id="btnClearAll" onclick="clearAll()" title="Clear all entries">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14H6L5 6" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
+            Clear
+          </button>
+          <input type="text" id="searchNameInput" class="add-input" placeholder="Search..." onkeyup="filterNames()"
+            style="flex: 1; padding: 6px 10px; font-size: 0.82rem; height: 34px;" />
+        </div>
+
+        <!-- Name list -->
+        <ul class="name-list" id="nameList"></ul>
+
+        <!-- Add name input -->
+        <div class="add-name-row">
+          <input id="newNameInput" class="add-input" type="text" placeholder="Add a name…" maxlength="80"
+            onkeydown="if(event.key==='Enter') addName()" />
+          <button class="add-btn" onclick="addName()" title="Add name">+</button>
+        </div>
+
+        <!-- Paste / bulk import -->
+        <details class="bulk-section">
+          <summary>Bulk import (paste names)</summary>
+          <textarea id="bulkTextarea" class="bulk-textarea" rows="5" placeholder="One name per line…"></textarea>
+          <button class="tool-btn" onclick="bulkImport()" style="margin-top:8px;width:100%">Import</button>
+        </details>
+      </div>
+
+      <!-- ---- RESULTS PANEL ---- -->
+      <div class="panel-content hidden" id="panelResults">
+        <div class="results-header">
+          <span class="results-label">Winners so far 🏆</span>
+          <button class="tool-btn danger" onclick="clearResults()" style="padding:6px 12px;font-size:.8rem">Clear
+            results</button>
+        </div>
+        <ol class="results-list" id="resultsList">
+          <li class="empty-state">No results yet — spin the wheel!</li>
+        </ol>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ===== EVENTS CAROUSEL ===== -->
+  <section class="carousel-section">
+    <h2 class="carousel-title">Past Events</h2>
+    <div class="carousel-track-wrapper">
+      <div class="carousel-track" id="carouselTrack"></div>
+    </div>
+  </section>
+
+  <!-- ===== WINNER MODAL ===== -->
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-confetti" id="confettiContainer"></div>
+      <div class="modal-winner-badge">🎉 We have a winner!</div>
+      <div class="modal-winner-name" id="modalWinnerName"></div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="closeModal('remove_only')">Close &amp; Remove</button>
+        <button class="modal-btn primary" onclick="closeModal('add_winner')">Add as Winner</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/wheel.js"></script>
+</body>
+
+</html>
